@@ -22,12 +22,25 @@ class Object(dict):
 
 class User(flask_login.UserMixin):
     '''User object'''
+
+    def __init__(self, *args, **kwargs):
+        super(User, self).__init__(*args, **kwargs)
+        self._roles = []
+
     @property
     def id(self):
         return self.get_id()
 
     def get_id(self):
         return getattr(self, 'email', 'Anonymous')
+
+    @property
+    def roles(self):
+        return self._roles
+
+    @roles.setter
+    def roles(self, values):
+        self._roles = values
 
 
 class LoginForm(Form):

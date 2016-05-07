@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block title %}Services{% endblock %}
+
+{% block main_content %}
+{% include 'header.html' %}
+<div class="row">
+  {% for service in services %}
+    <div class="col-md-3">
+      <div class="tile">
+        <h3 class="tile-title">{{ service.title }}</h3>
+        <p>{{ service.description }}</p>
+        <a class="btn btn-primary btn-lg btn-block"
+          href="{{url_for('view_service', name=service.endpoint) }}">Visit</a>
+      </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

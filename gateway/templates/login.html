@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}Login to Gateway{% endblock %}
+
+{% block main_content %}
+<div class="login">
+  <div class="login-screen">
+    <div class="login-icon-left col-md-6">Gateway</div>
+    <form class="login-form col-md-6"
+      action="{{ url_for('view_login', next=next) }}" method="post">
+      {{ form.csrf_token }}
+      <div class="form-group">
+        {{ form.email }}
+        <label class="login-field-icon fui-mail" for="email"></label>
+      </div>
+      <div class="form-group">
+        {{ form.password }}
+        <label class="login-field-icon fui-lock" for="password"></label>
+      </div>
+      <input type="submit" class="btn btn-primary btn-lg btn-block" value="Login">
+    </form>
+  </div>
+</div>
+{% endblock %}

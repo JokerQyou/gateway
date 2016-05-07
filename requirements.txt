@@ -1,0 +1,6 @@
+Flask
+flask-login
+Flask-WTF
+leancloud-sdk
+requests_unixsocket
+requests

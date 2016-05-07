@@ -1,0 +1,18 @@
+body {
+  background-color: #1abc9c;
+}
+.login {
+  margin-bottom: initial;
+  padding: 38px;
+  background-image: none;
+}
+.login-form, .form-control, .btn, .btn-lg, .tile {
+  border-radius: 1px;
+}
+.login-screen {
+  padding: 100px;
+  min-width: 420px;
+}
+.login-icon-left {
+  padding: 24px 23px;
+}

@@ -1,0 +1,94 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals, print_function
+import os
+from getpass import getpass
+
+# flask.Flask.cli requires flask>=1.0 but it's still in development yet,
+# we'll use docopt to parse options for now.
+import docopt
+import leancloud
+import six
+from six.moves import input
+
+__doc__ = '''
+Gateway dev tool.
+
+Usage:
+    dev add_admin
+    dev run
+
+Options:
+    -h --help    Show this help.
+'''
+
+
+def add_admin():
+    '''
+    Interactively add an administrator user
+    '''
+    # Basic setup
+    lc_app_id = getpass('Your LeanCloud APP ID: ')
+    lc_app_key = getpass('Your LeanCloud APP Key: ')
+    lc_master_key = getpass('Your LeanCloud APP Master Key: ')
+
+    # Init SDK
+    leancloud.init(lc_app_id, lc_app_key, master_key=lc_master_key)
+
+    # User info
+    user = leancloud.User()
+    user.set('username', input('Desired username: '))
+
+    # Password verificcation
+    passwd, passwd_2 = None, None
+    while not all([passwd, passwd_2]) or passwd != passwd_2:
+        if passwd is None:
+            passwd = getpass('Enter password: ')
+        if passwd_2 is None:
+            passwd_2 = getpass('Repeat password: ')
+        if passwd and passwd == passwd_2:
+            break
+        print('Password mismatch')
+    assert passwd == passwd_2
+    user.set('password', passwd)
+    user.set('email', input('Enter your email address:' ))
+
+    # Sign up
+    try:
+        user.sign_up()
+        print('User created. Go check your mailbox and activate your account')
+    except Exception as e:
+        print('Error happend during user creation:', e, ', please try again.')
+
+    # Grant admin permission
+    try:
+        role_query = leancloud.Query(leancloud.Role)
+        role_query.equal_to('name', 'Admin')
+        admin_role = role_query.first()
+        admin_role.get_users().add(user)
+        admin_role.save()
+        print('Admin permission granted.')
+    except Exception as e:
+        print(
+            'Error happened during admin role transition:',
+            e, ', please try again'
+        )
+
+
+def run_server():
+    lc_app_id = getpass('Your LeanCloud APP ID: ')
+    lc_app_key = getpass('Your LeanCloud APP Key: ')
+    os.environ.update({
+        'GATEWAY_LEANCLOUD_APP_ID': lc_app_id,
+        'GATEWAY_LEANCLOUD_APP_KEY': lc_app_key,
+        'GATEWAY_FLASK_SECRET': 'dev',
+    })
+    from gateway import application
+    application.run()
+
+if __name__ == '__main__':
+    args = docopt.docopt(__doc__)
+    if args['run']:
+        run_server()
+    elif args['add_admin']:
+        add_admin()

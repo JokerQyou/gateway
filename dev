@@ -76,13 +76,17 @@ def add_admin():
 
 
 def run_server():
-    lc_app_id = getpass('Your LeanCloud APP ID: ')
-    lc_app_key = getpass('Your LeanCloud APP Key: ')
-    os.environ.update({
-        'GATEWAY_LEANCLOUD_APP_ID': lc_app_id,
-        'GATEWAY_LEANCLOUD_APP_KEY': lc_app_key,
-        'GATEWAY_FLASK_SECRET': 'dev',
-    })
+    if not all([
+        os.environ.get('GATEWAY_LEANCLOUD_APP_ID', None),
+        os.environ.get('GATEWAY_LEANCLOUD_APP_KEY', None),
+    ]):
+        lc_app_id = getpass('Your LeanCloud APP ID: ')
+        lc_app_key = getpass('Your LeanCloud APP Key: ')
+        os.environ.update({
+            'GATEWAY_LEANCLOUD_APP_ID': lc_app_id,
+            'GATEWAY_LEANCLOUD_APP_KEY': lc_app_key,
+            'GATEWAY_FLASK_SECRET': 'dev',
+        })
     from gateway import application
     application.run()
 

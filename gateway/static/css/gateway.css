@@ -6,7 +6,7 @@ body {
   padding: 38px;
   background-image: none;
 }
-.login-form, .form-control, .btn, .btn-lg, .tile {
+.login-form, .form-control, .btn, .btn-lg, .tile, .alert {
   border-radius: 1px;
 }
 .login-screen {

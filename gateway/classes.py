@@ -3,6 +3,7 @@ from __future__ import unicode_literals, print_function
 
 import flask.ext.login as flask_login
 from flask_wtf import Form
+import leancloud
 from wtforms import StringField, PasswordField, BooleanField
 from wtforms.validators import Email, DataRequired
 
@@ -47,6 +48,11 @@ class User(flask_login.UserMixin):
         return self._lc_session_token
 
     def link_lc_user(self, user):
+        role_query = leancloud.Query(leancloud.Role)
+        role_query.contains_all('users', [user, ])
+
+        self.email = user.get_email()
+        self.roles = [r.get_name() for r in role_query.find()]
         self._lc_session_token = user.get_session_token()
 
 

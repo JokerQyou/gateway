@@ -73,15 +73,9 @@ def view_login():
             )
             flash('Login failed, please try again later')
         else:
-            # Credential verified, query user roles
-            role_query = leancloud.Query(leancloud.Role)
-            role_query.contains_all('users', [lc_user, ])
-            roles = [r.get_name() for r in role_query.find()]
-
             # Login succeeded
             user = User()
-            user.email = _user.email
-            user.roles = roles
+            # user.email = _user.email
             user.link_lc_user(lc_user)
             flask_login.login_user(user)
     next_url = request.args.get('next', url_for('view_service_list'))

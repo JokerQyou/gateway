@@ -31,4 +31,4 @@ def fetch_service_content(so, method='get'):
     if so.type == 'http':
         return requests.request(method, so.uri).content
     elif so.type == 'unix_socket':
-        return 'Unix socket URI not supported yet'
+        return requests_unixsocket.Session().request(method, so.uri).content

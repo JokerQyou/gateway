@@ -3,16 +3,25 @@
 
 {% block main_content %}
 {% include 'header.html' %}
+{% include 'flashed_messages.html' %}
 <div class="row">
-  {% for service in services %}
-    <div class="col-md-3">
+  {% if services %}
+    {% for service in services %}
+      <div class="col-md-3">
+        <div class="tile">
+          <h3 class="tile-title">{{ service.title }}</h3>
+          <p>{{ service.description }}</p>
+          <a class="btn btn-primary btn-lg btn-block"
+            href="{{url_for('view_service', name=service.endpoint) }}">Visit</a>
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <div class="col-md-12">
       <div class="tile">
-        <h3 class="tile-title">{{ service.title }}</h3>
-        <p>{{ service.description }}</p>
-        <a class="btn btn-primary btn-lg btn-block"
-          href="{{url_for('view_service', name=service.endpoint) }}">Visit</a>
+        <h3 class="tile-title">No service available for now.</h3>
       </div>
     </div>
-    {% endfor %}
+  {% endif %}
 </div>
 {% endblock %}

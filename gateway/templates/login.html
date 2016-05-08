@@ -4,6 +4,7 @@
 {% block main_content %}
 <div class="login">
   <div class="login-screen">
+    {% include 'flashed_messages.html' %}
     <div class="login-icon-left col-md-6">Gateway</div>
     <form class="login-form col-md-6"
       action="{{ url_for('view_login', next=next) }}" method="post">

@@ -2,19 +2,17 @@
 from __future__ import print_function, print_function
 import os
 
-import requests_unixsocket
 import requests
 from flask import (
-    Flask, request, render_template, redirect, url_for,
+    Flask, request, render_template, redirect, url_for, flash, abort,
 )
 import flask.ext.login as flask_login
 import leancloud
 
 from .classes import Object, User, LoginForm
+import utils
 
 
-# Required for services which bind to unix socket
-requests_unixsocket.monkeypatch()
 app = Flask(__name__)
 DEV_SECRET = 'dev'
 app.secret_key = os.environ.get('GATEWAY_FLASK_SECRET', DEV_SECRET)
@@ -43,6 +41,17 @@ def load_user(email):
     return
 
 
+@app.before_request
+def load_lc_user():
+    user = flask_login.current_user
+    if user.is_authenticated\
+            and 'Admin' in user.roles\
+            and user.get_lc_session_token() is not None:
+        lc_user = leancloud.User()
+        lc_user.become(flask_login.current_user.get_lc_session_token())
+        leancloud.user.current_user = lc_user
+
+
 @app.route('/')
 def view_index():
     return render_template('index.html')
@@ -58,10 +67,11 @@ def view_login():
         try:
             lc_user = leancloud.User()
             lc_user.login(_user.email, _user.password)
-        except:
+        except Exception as e:
             app.logger.warn(
                 'Login failed, email: %s', _user.email, exc_info=True
             )
+            flash('Login failed, please try again later')
         else:
             # Credential verified, query user roles
             role_query = leancloud.Query(leancloud.Role)
@@ -72,6 +82,7 @@ def view_login():
             user = User()
             user.email = _user.email
             user.roles = roles
+            user.link_lc_user(lc_user)
             flask_login.login_user(user)
     next_url = request.args.get('next', url_for('view_service_list'))
     if flask_login.current_user.is_authenticated:
@@ -83,6 +94,7 @@ def view_login():
 @app.route('/logout')
 def view_logout():
     flask_login.logout_user()
+    flash('You\'ve been logged out')
     return redirect(url_for('view_index'))
 
 
@@ -101,22 +113,15 @@ def view_dashboard():
 @app.route('/services', methods=('GET', ))
 @flask_login.login_required
 def view_service_list():
-    service = {
-        'title': 'Test service',
-        'description': 'Click on the button to visit this service',
-        'endpoint': 'test',
-        'type': 'http',
-        'uri': '127.0.0.1:1234',
-    }
-    services = [service, service, service, service, service, service, service]
-    return render_template('services.html', services=services)
+    return render_template('services.html', services=utils.list_services())
 
 
-@app.route('/services/<name>')
+@app.route('/services/<name>', methods=('GET', 'POST', 'HEAD', 'OPTIONS', ))
 @flask_login.login_required
 def view_service(name):
     # 1. Look up in service registry
-    # 2. If no such service, return 404 page
-    # 3. Else return service resource
-    return 'Service content for {}'.format(name)
-    # return requests.get('http://z.cn').content
+    services = utils.list_services()
+    for service in services:
+        if service.endpoint == name:
+            return utils.fetch_service_content(service, method=request.method)
+    abort(404)
